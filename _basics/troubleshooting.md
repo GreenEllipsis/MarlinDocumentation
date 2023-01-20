@@ -31,7 +31,26 @@ category: [ articles, getting-started ]
 Try doubling `BLOCK_BUFFER_SIZE` to see if the problem goes away.
 
 ### No LCD / SD on ReARM?
-As seen in this [Chris's Basement video](//youtube.com/watch?v=H-c8UTg-EMU), the RRD display doesn't always work on first install. It didn't even light up. A custom adapter is needed with the ReARM. See [this issue](//github.com/MarlinFirmware/Marlin/pull/7390#issuecomment-320371735), and [this issue](//github.com/MarlinFirmware/Marlin/issues/11927#issuecomment-441435170), and [this page](//github.com/wolfmanjm/universal-panel-adapter).
+As seen in this [Chris's Basement video](//youtu.be/H-c8UTg-EMU), the RRD display doesn't always work on first install. It didn't even light up. A custom adapter is needed with the ReARM. See [this issue](//github.com/MarlinFirmware/Marlin/pull/7390#issuecomment-320371735), and [this issue](//github.com/MarlinFirmware/Marlin/issues/11927#issuecomment-441435170), and [this page](//github.com/wolfmanjm/universal-panel-adapter).
+
+### G29 Probing Failed!
+Marlin uses the `Z_PROBE_LOW_POINT` value to prevent the probe from pressing too hard against the bed and getting damaged. A value of -2 works well for a flat and level bed, but if the bed isn't trammed yet, the probe may exceed the low point and trigger a "Probing Failed" error. To prevent this from happening, change the setting to something like -10 during initial setup, and then you can change it back after the bed is perfectly trammed.
+
+### One Side High, One Side Low
+- **Problem**: Bed probe done, leveling compensation enabled, and the first layer comes out out too squished on the right side, or too high on the left side, or *vice-versa*.
+- **Solution**: Make sure the probe is always perpendicular to the bed as the carriage moves. If the wires or Bowden tube are pulling on the carriage, or if the X gantry is even slightly twisted, the probe will not remain perpendicular and its readings will be garbaggio. There is a feature called `MECHANICAL_GANTRY_CALIBRATION` that can be used to compensate, but it is always best to tackle any mechanical issues first.
+
+### Heating Failed!
+Thermal Runaway is a constant concern with heaters, so Marlin watches heaters for some common runaway conditions:
+
+- Thermistor shorted or broken (MINTEMP/MAXTEMP).
+- Heating Failed: Temperature is rising too slowly (while below target).
+- Thermal Runaway: Temperature is too far from target range for too long (after settling).
+  NOTE: Thermal Runaway can be caused by a fan blowing too close to the hotend.
+
+During a first-time setup or firmware upgrade, we recommend leaving Thermal Protection enabled but relaxing the settings. To do this, set `WATCH_TEMP_PERIOD` and `WATCH_BED_TEMP_PERIOD` to longer intervals, such as 40 or 60 seconds. You can increase the `HYSTERESIS` settings to makes thermal protection more tolerant of an untuned PID. You should run `M303` on the hotend and bed as soon as possible, and it will help to loosen up thermal protection until all the PID is well tuned.
+
+Depending on your setup, you may get more stable heating using `MPCTEMP` instead of `PIDTEMP`.
 
 ### FTDI USB Bandwidth
 At 115K baud use 167 latency, 192 USB block request. As one goes up the other goes down.
@@ -42,7 +61,7 @@ This is a hardware issue due to the connected beeper pin being HIGH when the boa
 ### Random Halting
 An under-powered PSU combined with heaters and high speed moves can lead to a frozen board. No kill, no watchdog, heaters stuck on. See [#17202](//github.com/MarlinFirmware/Marlin/issues/17202). To test for this:
 - To test for this, enable the bed and extruder heaters and print at high speed to see if a hard freeze occurs. Try disabling heaters and/or slower printing to see if the problem goes away.
-- Read the input voltage from PSU with a meter during fast moves. If you see a drop too far below your expected voltage (e.g., 12V or 24V) this indicates a problem.
+- Read the input voltage from PSU with a meter during fast moves. If you see a drop too far below your expected voltage (_e.g.,_ 12V or 24V) this indicates a problem.
 
 ### EEPROM Errors
 
@@ -58,12 +77,14 @@ EEPROM CRC mismatch - (stored) 4235 != 6244 (calculated)!
 **Troubleshooting Procedure**
 
 - If using Octoprint, turn off the option to disconnect on "Error" messages before proceeding.
+
 - Do [`M502`](/docs/gcode/M502.html) and [`M500`](/docs/gcode/M500.html) and then reboot the machine. This procedure will initialize the EEPROM to your configured "factory" settings.
-- If you still see checksum or data-size errors, add the following option to your `Configuration.h`, flash, and reboot.
+
+- If you continue to get error messages, use `DEBUG_EEPROM_READWRITE` to run a check for mismatched fields during [`M501`](/docs/gcode/M501.html) (read) and [`M500`](/docs/gcode/M500.html) (write). A mismatched field is a bug, so please report these errors to the Marlin project. To do this check, add the following option to your `Configuration.h`, flash, and reboot:
   ```cpp
   #define DEBUG_EEPROM_READWRITE
   ```
-  This option makes Marlin check the EEPROM data during [`M501`](/docs/gcode/M501.html) (read) and [`M500`](/docs/gcode/M500.html) (write) and report mismatched fields. Please report these errors to the Marlin project, because a mismatched field may indicate a bug in the code.
+
 - You can also enable the `EEPROM_AUTO_INIT` option to automatically reset the EEPROM when the data structure changes or the data gets corrupted.
 
 ### Sanity Check Errors
@@ -86,7 +107,7 @@ These tips are collected from various reports we have received. See [Trinamic tr
 - **SPI conflict with the SD card?** Solutions vary.
 - **E Stepper won't move when using Linear Advance with TMC drivers?**
   - "I ended up using the drivers in legacy mode and setting them to SpreadCycle using the OTP (One Time Programmer). Unfortunately trying to set individual drivers to SpreadCycle via UART by enabling HybridThreshhold and setting the threshold to 0 for the respective axes did not work." See [#11825](//github.com/MarlinFirmware/Marlin/issues/11825).
-- **Loud / grinding TMC2208?** Increase the current to ~1500mA and lower the Hybrid Threshold.
+- **Loud / grinding TMC2208?** Increase the current to \~1500mA and lower the Hybrid Threshold.
 - **Unreliable printing, shifting layers?** Make sure the 'rsense' value is configured according to recommendations. See [#9368](//github.com/MarlinFirmware/Marlin/issues/9368).
 - **TMC2208** uses **SoftwareSerial**, and this conflicts with **Endstop Interrupts**. Disable Endstop Interrupts to proceed.
 - **Should I use `SOFTWARE_DRIVER_ENABLE`?** Not unless required by the hardware. See [#13326](//github.com/MarlinFirmware/Marlin/issues/13326).
@@ -100,7 +121,3 @@ These tips are collected from various reports we have received. See [Trinamic tr
 ### BLTouch Pin Drop / Blinking
 - Servo voltage / signals may be unstable due to heater signal lines being too close to servo traces.
 - **Solution**: Disconnect the servo signal line after the print starts.
-
-### Auto Build Marlin
-
-  See [Auto Build Troubleshooting Guide](auto_build_problems.html).

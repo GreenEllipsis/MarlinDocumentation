@@ -1,22 +1,8 @@
 ---
 title:       Download
+regenerate: true
 description: Download the latest Marlin source code
 category:    [ default ]
-
-nightlies:
-  -
-    version: bugfix-2.0.x
-    description: Marlin 2.0 with bug fixes
-    extra: Patches to latest 2.0.x
-    tools: Supports AVR and ARM<br/>Arduino and PlatformIO
-    file: bugfix-2.0.x.zip
-    config: bugfix-2.0.x
-  -
-    version: bugfix-1.1.x
-    description: 1.1.x "bugfix" snapshot
-    extra: Patches after 1.1.9
-    tools: Supports Arduino 1.6.8 and up
-    file: bugfix-1.1.x.zip
 
 header: |
         Previous releases can be downloaded directly from the [Marlin Github page](//github.com/MarlinFirmware/Marlin/releases).
@@ -36,27 +22,49 @@ footer: |
   {{ page.header | markdownify }}
   <table>
     <tr><th>Description</th><th>Version</th><th>Download</th><th>Configurations</th>
-    {% for release in site.data.marlin %}
+    {% for release in site.data.marlin.downloads %}
       <tr>
         <td>
           {% if release.extra %}<strong><em>{{ release.extra }}</em></strong><br/>{% endif %}
           <strong>{{ release.description }}</strong><br/>
           <em>{{ release.tools }}<em>
         </td>
-        <td><code>{{ release.version }}</code></td>
+        <td><a href="//github.com/MarlinFirmware/Marlin/tree/{{ release.version }}"><code>{{ release.version }}</code></a></td>
         <td><a href="//github.com/MarlinFirmware/Marlin/archive/{{ release.file }}">{{ release.file }}</a></td>
         <td>
           {% if release.config %}
             <a href="//github.com/MarlinFirmware/Configurations/tree/{{ release.config }}">View / Download</a>
+          {% else %}
+            (included)
           {% endif %}
         </td>
       </tr>
     {% endfor %}
   </table>
-  <h2 class="ctr">Marlin "Nightly" Builds</h2>
+  <h2 class="ctr">Marlin "Nightly" Source</h2>
   <table>
     <tr><th>Description</th><th>Version</th><th>Download</th><th>Configurations</th>
-    {% for nightly in page.nightlies %}
+    {% for nightly in site.data.marlin.nightlies %}
+      <tr>
+        <td>
+          {% if nightly.extra %}<strong><em>{{ nightly.extra }}</em></strong><br/>{% endif %}
+          <strong>{{ nightly.description }}</strong><br/>
+          <em>{{ nightly.tools }}<em>
+        </td>
+        <td><code>{{ nightly.version }}</code></td>
+        <td><a href="//github.com/MarlinFirmware/Marlin/archive/{{ nightly.file }}">{{ nightly.file }}</a></td>
+        <td>
+          {% if nightly.config %}
+            <a href="//github.com/MarlinFirmware/Configurations/tree/{{ nightly.config }}">View / Download</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  <h2 class="ctr">Marlin Patched Source</h2>
+  <table>
+    <tr><th>Description</th><th>Version</th><th>Download</th><th>Configurations</th>
+    {% for nightly in site.data.marlin.patched %}
       <tr>
         <td>
           {% if nightly.extra %}<strong><em>{{ nightly.extra }}</em></strong><br/>{% endif %}
