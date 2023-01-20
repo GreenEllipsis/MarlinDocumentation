@@ -9,7 +9,7 @@ category: [ development ]
 
 ## Marlin Code Overview
 
-Marlin is a very complex Arduino sketch. It is as complicated for developers to navigate as it is for new users who might want to make a small change. This document is meant to be a concise guide to help you find your way around the Marlin codebase and understand how the program works, at least in principle.
+Marlin is a complex software. It is as complicated for developers to navigate as it is for new users who might want to make a small change. This document is meant to be a concise guide to help you find your way around the Marlin codebase and understand how the program works, at least in principle.
 
 This document provides a high level overview of structural details and program flow. By the end you should have an idea where (and how) to find your way around. Other details, such as Marlin coding style, are described in more detail on the [Coding Standards](coding_standards.html) page for those who may want to contribute.
 
